@@ -3,7 +3,7 @@
 // @version      1.4
 // @description  ur welcome cheater
 // @author       Alex Dubov (github@adubov1)
-// @match        https://www.khanacademy.org/*
+// @match        https://pl.khanacademy.org/*
 // @grant        none
 // ==/UserScript==
 
