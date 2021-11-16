@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Khan Academy Bot
-// @version      1.4
+// @name         Khan Answers
+// @version      1.5
 // @description  ur welcome cheater
-// @author       Alex Dubov (github@adubov1)
+// @author       Alex Dubov (github@adubov1) / zgredinzyyy (github@zgredinzyyy)
 // @match        https://pl.khanacademy.org/*
+// @match        https://www.khanacademy.org/*
 // @grant        none
 // ==/UserScript==
 
@@ -49,6 +50,10 @@
             });
 
             const text = answer.join("\n");
+            if (text.startsWith("\\")) {
+               this.printLatex(text.trim());
+               return
+            }
             if (text) {
                 console.log(`%c${text.trim()} `, style);
             }
@@ -69,6 +74,27 @@
                 ].join(' ');
                 console.log('%c ', imageStyle);
             };
+        }
+
+        printLatex(url) {
+            const mathurl = "https://math.now.sh?from=" + urlencode(String.raw`${url}`);
+            var image = new Image();
+
+            image.onload = function() {
+              var style = [
+                'font-size: 1px;',
+                'line-height: ' + this.height % 2 + 'px;',
+                'padding: ' + this.height * .5 + 'px ' + this.width * .5 + 'px;',
+                'background-size: ' + this.width + 'px ' + this.height + 'px;',
+                'background: url('+ mathurl +');'
+               ].join(' ');
+
+               // notice the space after %c
+               console.log('%c ', style);
+            };
+
+            // Actually loads the image
+            image.src = mathurl;
         }
     }
 
@@ -113,8 +139,9 @@
 
             if (!window.loaded) {
                 console.clear();
-                console.log("%c Answer Revealer ", "color: mediumvioletred; -webkit-text-stroke: .5px black; font-size:40px; font-weight:bolder; padding: .2rem;");
-                console.log("%cCreated by Alex Dubov (@adubov1)", "color: white; -webkit-text-stroke: .5px black; font-size:15px; font-weight:bold;");
+                console.log("%c Khan Answers ", "color: #e74c3c; -webkit-text-stroke: .5px black; font-size:40px; font-weight:bolder; padding: .2rem;");
+                console.log("%cOriginally created by Alex Dubov (@adubov1)", "color: white; font-size:15px;");
+                console.log("%cContinued by @zgredinzyyy", "color: white; font-size:15px;");
                 window.loaded = true;
             }
 
@@ -176,5 +203,17 @@
         }).flat();
 
         return new Answer(answer, "dropdown");
+    }
+
+    function urlencode(str) {
+        str = (str + '').toString();
+
+        return encodeURIComponent(str)
+            .replace('!', '%21')
+            .replace('\'', '%5C')
+            .replace('(', '%28')
+            .replace(')', '%29')
+            .replace('*', '%2A')
+            .replace('%20', '+');
     }
 })();
