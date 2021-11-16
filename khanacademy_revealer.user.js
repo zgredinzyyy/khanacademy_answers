@@ -50,7 +50,7 @@
             });
 
             const text = answer.join("\n");
-            if (text.startsWith("\\")) {
+            if (text.startsWith("\\") || isLetter(text[0])) {
                this.printLatex(text.trim());
                return
             }
@@ -215,5 +215,9 @@
             .replace(')', '%29')
             .replace('*', '%2A')
             .replace('%20', '+');
+    }
+
+    function isLetter(c) {
+        return c.toLowerCase() != c.toUpperCase();
     }
 })();
