@@ -50,7 +50,7 @@
             });
 
             const text = answer.join("\n");
-            if (text.startsWith("\\") || isLetter(text[0])) {
+            if (text.startsWith("\\") || !isLetter(text[0])) {
                this.printLatex(text.trim());
                return
             }
