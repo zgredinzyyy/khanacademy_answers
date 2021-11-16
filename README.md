@@ -1,6 +1,6 @@
 # An answer revealer for Khan Academy
 
-  *Working as of 12/5/2020* 
+  *Working as of 16/11/2021* 
 
 If this script helped or interested you, please consider staring the repo above. That number looks cool when it's big
 
