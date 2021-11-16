@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Khan Answers
-// @version      1.5
+// @version      1.6
 // @description  ur welcome cheater
 // @author       Alex Dubov (github@adubov1) / zgredinzyyy (github@zgredinzyyy)
 // @match        https://pl.khanacademy.org/*
