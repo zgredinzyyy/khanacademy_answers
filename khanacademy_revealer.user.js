@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Khan Answers
-// @version      1.6
+// @version      1.8
 // @description  ur welcome cheater
 // @author       Alex Dubov (github@adubov1) / zgredinzyyy (github@zgredinzyyy)
 // @match        https://pl.khanacademy.org/*
@@ -11,7 +11,15 @@
 (function () {
     'use strict';
     window.loaded = false;
-
+    window.khan_debug = {
+        enable: false,
+        latex: true,
+        graph: true,
+        fetch_data: true,
+        answer: true,
+        json: true,
+        prevent_printing: false
+    }
     class Answer {
         constructor(answer, type) {
             this.body = answer;
@@ -36,7 +44,15 @@
 
         log() {
             const answer = this.body;
+            if (window.khan_debug.enable && window.khan_debug.answer) {console.group("Answer Body:"); console.log(answer); console.groupEnd();};
             const style = "color: coral; -webkit-text-stroke: .5px black; font-size:24px; font-weight:bold;";
+            const consoleCode = "background: #EEEEF6;" +
+                        "border: 1px solid #B2B0C1;" +
+                        "border-radius: 7px;" +
+                        "padding: 2px 8px 3px;" +
+                        "color: #5F5F5F;" +
+                        "line-height: 22px;" +
+                        "box-shadow: 0px 0px 1px 1px rgba(178,176,193,0.3)";
 
             answer.map(ans => {
                 if (typeof ans == "string") {
@@ -49,35 +65,23 @@
                 }
             });
 
-            const text = answer.join("\n");
-            if (text.startsWith("\\") || !isLetter(text[0])) {
+            if (window.khan_debug.enable && window.khan_debug.prevent_printing) return;
+            let text = (String.raw`${answer.join("\n")}`);
+            if (text.includes("\\") || !isLetter(text[0])) {
                this.printLatex(text.trim());
                return
             }
             if (text) {
-                console.log(`%c${text.trim()} `, style);
+                console.log(`%c${text.trim()} `, consoleCode);
+            }
+            else {
+                console.log(`%cNone of the above. `, consoleCode);
             }
         }
 
         printImage(ans) {
             const url = ans.replace("![](web+graphie", "https").replace(")", ".svg");
-            const image = new Image();
-
-            image.src = url;
-            image.onload = () => {
-                const imageStyle = [
-                    'font-size: 1px;',
-                    'line-height: ', this.height % 2, 'px;',
-                    'padding: ', this.height * .5, 'px ', this.width * .5, 'px;',
-                    'background-size: ', this.width, 'px ', this.height, 'px;',
-                    'background: url(', url, ');'
-                ].join(' ');
-                console.log('%c ', imageStyle);
-            };
-        }
-
-        printLatex(url) {
-            const mathurl = "https://math.now.sh?from=" + urlencode(String.raw`${url}`);
+            if (window.khan_debug.enable && window.khan_debug.graph) {console.group("Graph URL:"); console.log(url); console.groupEnd();};
             var image = new Image();
 
             image.onload = function() {
@@ -86,14 +90,33 @@
                 'line-height: ' + this.height % 2 + 'px;',
                 'padding: ' + this.height * .5 + 'px ' + this.width * .5 + 'px;',
                 'background-size: ' + this.width + 'px ' + this.height + 'px;',
-                'background: url('+ mathurl +');'
+                'background: url('+ url +') no-repeat;'
                ].join(' ');
 
-               // notice the space after %c
                console.log('%c ', style);
             };
 
-            // Actually loads the image
+            image.src = url;
+        }
+
+        printLatex(url) {
+            const mathurl = "https://math.now.sh?from=" + urlencode(String.raw`${url}`);
+            if (window.khan_debug.enable && window.khan_debug.latex) {console.group("LATEX URL:"); console.log(mathurl); console.groupEnd();};;
+            var image = new Image();
+
+            image.onload = function() {
+              var style = [
+                'font-size: 1px;',
+                'line-height: ' + this.height % 2 + 'px;',
+                'padding: ' + this.height * .5 + 'px ' + this.width * .5 + 'px;',
+                'margin: ' + this.height * .1 + 'px ' + this.width * .1 + 'px;',
+                'background-size: ' + this.width + 'px ' + this.height + 'px;',
+                'background: url('+ mathurl +') no-repeat;',
+               ].join(' ');
+
+               console.log('%c ', style);
+            };
+
             image.src = mathurl;
         }
     }
@@ -108,6 +131,7 @@
 
                     try {
                         item = json.data.assessmentItem.item.itemData;
+                        if (window.khan_debug.enable && window.khan_debug.json) {console.group("JSON Response:"); console.log(JSON.parse(item)); console.groupEnd();};
                         question = JSON.parse(item).question;
                     } catch {
                         let errorIteration = () => { return localStorage.getItem("error_iter") || 0; }
@@ -209,12 +233,13 @@
         str = (str + '').toString();
 
         return encodeURIComponent(str)
-            .replace('!', '%21')
-            .replace('\'', '%5C')
-            .replace('(', '%28')
-            .replace(')', '%29')
-            .replace('*', '%2A')
-            .replace('%20', '+');
+            .replaceAll('!', '%21')
+            .replaceAll('\'', '%5C')
+            .replaceAll('(', '%28')
+            .replaceAll(')', '%29')
+            .replaceAll('*', '%2A')
+            .replaceAll('+', '%5C;')
+            .replaceAll('%20', '%5C;'); // Adds LaTeX spacing
     }
 
     function isLetter(c) {
